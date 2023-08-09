@@ -126,6 +126,54 @@ class DetectionEngine:
 
         self.decoded_tags = decoded_tags
         return decoded_tags
+    
+    def process2(self, image, detect_scale = None):
+        stag_detector= self.stag_detector
+        stag_decoder = self.stag_decoder
+
+        if detect_scale is None:
+            h, w = image.shape[:2]
+            detect_scale = min(640, min(h, w))/ min(h, w)
+
+        if type(detect_scale) == list:
+            detect_scales = detect_scale
+        else:
+            detect_scales = [detect_scale]
+
+
+        # stage-1
+        self.image = image
+        print('>>>>>>>Stage-1<<<<<<<')
+        rois_info = stag_detector.detect_rois(image, detect_scales[0] )
+        self.bbox_corner_info = stag_detector.image_res
+
+        # stage-1 print
+        print('%d ROIs'%len(rois_info))
+
+ 
+        # stage-2
+        print('>>>>>>>Stage-2<<<<<<<')
+        rois = [roi_info['ordered_corners'] for roi_info in rois_info]
+        self.rois_info = rois_info        
+        decoded_tags = stag_decoder.detect_tags(image, rois.copy())
+
+        # stage-2 print
+        print('Valid ROIs:', end=' ')
+        for ii, decoded_tag in enumerate(decoded_tags):
+            if decoded_tag['is_valid']: print('%d'% ii, end=', ')
+        print('')
+
+        # estimate pose
+        for ii, decoded_tag in enumerate(decoded_tags):
+            if not decoded_tag['is_valid']: continue
+            roi = rois[ii]
+            pose_result = self.estimate_pose(decoded_tag, roi)
+
+            for k in pose_result:
+                decoded_tag[k] = pose_result[k] 
+
+        self.decoded_tags = decoded_tags
+        return decoded_tags, self.rois_info, self.bbox_corner_info
 
 
     def print_timming(self):

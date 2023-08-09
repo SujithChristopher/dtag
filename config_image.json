@@ -1,7 +1,7 @@
 {
     "is_video":0,
     "filepath":"images/apriltag_cube.png",
-    "family": "apriltag",
+    "family": "aruco",
     "hamming_dist": 8,
     "codebook": "",
     "cameraMatrix": [921.315, 0, 649.204, 0, 921.375, 459.739, 0, 0, 1],
