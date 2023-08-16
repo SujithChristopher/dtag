@@ -17,8 +17,8 @@ def load_deeptag_models(tag_family, device = None):
     elif tag_family == 'runetag':
         TAG_TYPE = 4
 
-    checkpoint_dir = 'models'
-    checkpoint_dir_2stg = 'models'
+    checkpoint_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)),'models')
+    checkpoint_dir_2stg = os.path.join(os.path.dirname(os.path.abspath(__file__)),'models')
 
     
     num_classes_keypoints =2

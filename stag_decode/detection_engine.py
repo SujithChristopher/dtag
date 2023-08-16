@@ -42,9 +42,6 @@ class DetectionEngine:
 
         if image_rect_size is None:
             image_rect_size = (256, 256) if tag_type != 'runetag' else (512, 512)
-        
-
-
 
 
         if tag_type == 'runetag':
@@ -64,7 +61,7 @@ class DetectionEngine:
         self.stag_decoder = StagDecoder(decoder_predictor, unit_tag_template, marker_dict, border_ratio = border_ratio, iter_num= stg2_iter_num, cameraMatrix= cameraMatrix, distCoeffs = distCoeffs, image_rect_size = image_rect_size, sigma_keypoints= sigma_keypoints, batch_size= batch_size_stg2)
 
 
-        # self.step_elem_num = unit_tag_template.get_step_elem_num()
+        self.step_elem_num = step_elem_num
         self.decoded_tags_history = [] 
         self.pose_solver_dict = unit_tag_template.get_pose_solver_dict(cameraMatrix= cameraMatrix, distCoeffs = distCoeffs)
         self.tag_anno_dict = tag_anno_dict
@@ -74,6 +71,7 @@ class DetectionEngine:
         self.valid_count = 0
         self.tag_type = tag_type
         self.codebook = codebook
+        self.unit_tag_template = unit_tag_template
 
 
       
@@ -95,25 +93,26 @@ class DetectionEngine:
 
         # stage-1
         self.image = image
-        print('>>>>>>>Stage-1<<<<<<<')
+        # print('>>>>>>>Stage-1<<<<<<<')
         rois_info = stag_detector.detect_rois(image, detect_scales[0] )
         self.bbox_corner_info = stag_detector.image_res
 
         # stage-1 print
-        print('%d ROIs'%len(rois_info))
+        # print('%d ROIs'%len(rois_info))
 
  
         # stage-2
-        print('>>>>>>>Stage-2<<<<<<<')
+        # print('>>>>>>>Stage-2<<<<<<<')
         rois = [roi_info['ordered_corners'] for roi_info in rois_info]
         self.rois_info = rois_info        
         decoded_tags = stag_decoder.detect_tags(image, rois.copy())
 
         # stage-2 print
-        print('Valid ROIs:', end=' ')
+        # print('Valid ROIs:', end=' ')
         for ii, decoded_tag in enumerate(decoded_tags):
-            if decoded_tag['is_valid']: print('%d'% ii, end=', ')
-        print('')
+            # if decoded_tag['is_valid']: print('%d'% ii, end=', ')
+            pass
+        # print('')
 
         # estimate pose
         for ii, decoded_tag in enumerate(decoded_tags):
@@ -173,7 +172,7 @@ class DetectionEngine:
                 decoded_tag[k] = pose_result[k] 
 
         self.decoded_tags = decoded_tags
-        return decoded_tags, self.rois_info, self.bbox_corner_info
+        return decoded_tags, self.rois_info, self.bbox_corner_info, self.unit_tag_template, self.step_elem_num
 
 
     def print_timming(self):
@@ -230,6 +229,8 @@ class DetectionEngine:
                 main_idx = 0
             else:
                 main_idx = decoded_tag['main_idx']
+            # print("main idx",main_idx)
+            main_idx = 0
             ordered_corners_stg1_rotated = roi[main_idx:] + roi[:main_idx]
             tag_kpts_anno_corners = [[-0.5, -0.5, 0], [0.5, -0.5, 0], [0.5, 0.5,0], [-0.5, 0.5, 0]]
             res_code_stg1, rvecs_stg1, tvecs_stg1 = pose_solver.keypoints_to_pose(ordered_corners_stg1_rotated, kpts_valid_flags=None,tag_real_size_in_meter=tag_real_size_in_meter, tag_kpts_anno=tag_kpts_anno_corners)

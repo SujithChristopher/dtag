@@ -9,6 +9,7 @@ class PoseSolver:
         self.distCoeffs =np.array(distCoeffs)
         self.is_ransac_solvepnp = is_ransac_solvepnp
         self.tag_real_size_in_meter_default =tag_real_size_in_meter_default
+        
         if tag_type == 'runetag':
             fine_grid_points_anno = get_runetag_keypoints_anno(unit_tag)
         else:

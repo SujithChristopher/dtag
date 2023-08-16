@@ -21,8 +21,6 @@ def visualize_rt(image, rvecs, tvecs, cameraMatrix, distCoeffs, tag_real_size_in
         imagePoints, jac = cv2.projectPoints(objectPoints, rvecs, tvecs, cameraMatrix, distCoeffs)
         tid_text_pos = imagePoints[0].ravel().tolist()
 
-  
-
     # draw xyz-axis
     image = draw_pose(image,rvecs, tvecs, cameraMatrix, distCoeffs, tag_real_size_in_meter/2, rotate_idx = rotate_idx)
     if is_draw_cube:
